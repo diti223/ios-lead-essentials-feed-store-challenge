@@ -30,17 +30,12 @@ public final class CoreDataFeedStore: FeedStore {
 
 	public func retrieve(completion: @escaping RetrievalCompletion) {
 		perform { context in
-			let request: NSFetchRequest<ManagedFeed> = ManagedFeed.fetchRequest()
-			guard let feed = try? context.fetch(request).first,
-			      let fetchedItems = feed.items else {
+			guard let feed = try? self.fetchFirstManagedFeed(),
+			      let managedFeedImages = feed.managedFeedImages else {
 				return completion(.empty)
 			}
-			let items = fetchedItems.map {
-				$0 as! ManagedFeedImage
-			}.map { item in
-				LocalFeedImage(id: item.id!, description: item.imageDescription, location: item.location, url: item.url!)
-			}
-			completion(.found(feed: items, timestamp: feed.timestamp!))
+			let feedImages = managedFeedImages.map(LocalFeedImage.init(managedFeedImage:))
+			completion(.found(feed: feedImages, timestamp: feed.timestamp!))
 		}
 	}
 
@@ -71,6 +66,11 @@ public final class CoreDataFeedStore: FeedStore {
 		}
 	}
 
+	private func fetchFirstManagedFeed() throws -> ManagedFeed? {
+		let request: NSFetchRequest<ManagedFeed> = ManagedFeed.fetchRequest()
+		return try context.fetch(request).first
+	}
+
 	private func createManagedFeedImage(from feedImage: LocalFeedImage) -> ManagedFeedImage {
 		let managedItem = ManagedFeedImage(context: context)
 		managedItem.id = feedImage.id
@@ -86,5 +86,19 @@ public final class CoreDataFeedStore: FeedStore {
 		let managedItemsSet = NSOrderedSet(array: managedItems)
 		managedFeed.addToItems(managedItemsSet)
 		return managedFeed
+	}
+}
+
+private extension ManagedFeed {
+	var managedFeedImages: [ManagedFeedImage]? {
+		items?.map {
+			$0 as! ManagedFeedImage
+		}
+	}
+}
+
+private extension LocalFeedImage {
+	init(managedFeedImage feedImage: ManagedFeedImage) {
+		self.init(id: feedImage.id!, description: feedImage.imageDescription, location: feedImage.location, url: feedImage.url!)
 	}
 }
