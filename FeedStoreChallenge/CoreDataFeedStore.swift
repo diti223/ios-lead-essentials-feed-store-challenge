@@ -30,39 +30,24 @@ public final class CoreDataFeedStore: FeedStore {
 
 	public func retrieve(completion: @escaping RetrievalCompletion) {
 		perform { context in
-			do {
-				let request: NSFetchRequest<ManagedFeed> = ManagedFeed.fetchRequest()
-				guard let feed = try context.fetch(request).first,
-				      let fetchedItems = feed.items else {
-					return completion(.empty)
-				}
-				let items = fetchedItems.map {
-					$0 as! ManagedFeedImage
-				}.map { item in
-					LocalFeedImage(id: item.id!, description: item.imageDescription, location: item.location, url: item.url!)
-				}
-				completion(.found(feed: items, timestamp: feed.timestamp!))
-			} catch {
-				completion(.empty)
+			let request: NSFetchRequest<ManagedFeed> = ManagedFeed.fetchRequest()
+			guard let feed = try? context.fetch(request).first,
+			      let fetchedItems = feed.items else {
+				return completion(.empty)
 			}
+			let items = fetchedItems.map {
+				$0 as! ManagedFeedImage
+			}.map { item in
+				LocalFeedImage(id: item.id!, description: item.imageDescription, location: item.location, url: item.url!)
+			}
+			completion(.found(feed: items, timestamp: feed.timestamp!))
 		}
 	}
 
 	public func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping InsertionCompletion) {
 		perform { context in
-			let managedFeed = ManagedFeed(context: context)
+			let managedFeed = self.createManagedFeed(from: feed)
 			managedFeed.timestamp = timestamp
-			let managedItems = feed.map { (item) -> ManagedFeedImage in
-				let managedItem = ManagedFeedImage(context: context)
-				managedItem.id = item.id
-				managedItem.imageDescription = item.description
-				managedItem.location = item.location
-				managedItem.url = item.url
-				return managedItem
-			}
-			let managedItemsSet = NSOrderedSet(array: managedItems)
-			managedFeed.addToItems(managedItemsSet)
-			context.insert(managedFeed)
 
 			do {
 				try context.save()
@@ -77,10 +62,29 @@ public final class CoreDataFeedStore: FeedStore {
 		fatalError("Must be implemented")
 	}
 
+	//MARK: - Private Methods
+
 	private func perform(_ action: @escaping (NSManagedObjectContext) -> Void) {
 		let context = self.context
 		context.perform {
 			action(context)
 		}
+	}
+
+	private func createManagedFeedImage(from feedImage: LocalFeedImage) -> ManagedFeedImage {
+		let managedItem = ManagedFeedImage(context: context)
+		managedItem.id = feedImage.id
+		managedItem.imageDescription = feedImage.description
+		managedItem.location = feedImage.location
+		managedItem.url = feedImage.url
+		return managedItem
+	}
+
+	private func createManagedFeed(from feed: [LocalFeedImage]) -> ManagedFeed {
+		let managedFeed = ManagedFeed(context: context)
+		let managedItems = feed.map(createManagedFeedImage(from:))
+		let managedItemsSet = NSOrderedSet(array: managedItems)
+		managedFeed.addToItems(managedItemsSet)
+		return managedFeed
 	}
 }
