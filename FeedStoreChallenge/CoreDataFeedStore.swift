@@ -30,12 +30,16 @@ public final class CoreDataFeedStore: FeedStore {
 
 	public func retrieve(completion: @escaping RetrievalCompletion) {
 		perform { context in
-			guard let feed = try? self.fetchFirstManagedFeed(),
-			      let managedFeedImages = feed.managedFeedImages else {
-				return completion(.empty)
+			do {
+				guard let feed = try self.fetchFirstManagedFeed(),
+				      let managedFeedImages = feed.managedFeedImages else {
+					return completion(.empty)
+				}
+				let feedImages = managedFeedImages.map(LocalFeedImage.init(managedFeedImage:))
+				completion(.found(feed: feedImages, timestamp: feed.timestamp!))
+			} catch {
+				completion(.failure(error))
 			}
-			let feedImages = managedFeedImages.map(LocalFeedImage.init(managedFeedImage:))
-			completion(.found(feed: feedImages, timestamp: feed.timestamp!))
 		}
 	}
 
