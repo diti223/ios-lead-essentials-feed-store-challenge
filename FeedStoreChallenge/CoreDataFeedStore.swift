@@ -45,10 +45,12 @@ public final class CoreDataFeedStore: FeedStore {
 
 	public func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping InsertionCompletion) {
 		perform { context in
+
 			let managedFeed = self.createManagedFeed(from: feed)
 			managedFeed.timestamp = timestamp
 
 			do {
+				try context.execute(self.makeDeleteManagedFeedRequest())
 				try context.save()
 				completion(nil)
 			} catch {
@@ -62,6 +64,10 @@ public final class CoreDataFeedStore: FeedStore {
 	}
 
 	//MARK: - Private Methods
+	
+	private func makeDeleteManagedFeedRequest() -> NSBatchDeleteRequest {
+		NSBatchDeleteRequest(fetchRequest: ManagedFeed.fetchRequest())
+	}
 
 	private func perform(_ action: @escaping (NSManagedObjectContext) -> Void) {
 		let context = self.context
