@@ -23,6 +23,13 @@ extension NSManagedObjectContext {
 		)
 	}
 
+	static func alwaysFailingExecuteStub() -> Stub {
+		Stub(
+			#selector(NSManagedObjectContext.execute(_:)),
+			#selector(Stub.execute(_:))
+		)
+	}
+
 	class Stub: NSObject {
 		private let source: Selector
 		private let destination: Selector
@@ -37,6 +44,10 @@ extension NSManagedObjectContext {
 		}
 
 		@objc func save() throws {
+			throw anyNSError()
+		}
+
+		@objc func execute(_ request: NSPersistentStoreRequest) throws -> NSPersistentStoreResult {
 			throw anyNSError()
 		}
 
