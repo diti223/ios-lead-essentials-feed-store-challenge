@@ -109,8 +109,8 @@ public final class CoreDataFeedStore: FeedStore {
 
 private extension ManagedFeed {
 	var managedFeedImages: [ManagedFeedImage]? {
-		items?.map {
-			$0 as! ManagedFeedImage
+		items?.compactMap {
+			$0 as? ManagedFeedImage
 		}
 	}
 }
