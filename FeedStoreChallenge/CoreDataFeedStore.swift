@@ -55,6 +55,7 @@ public final class CoreDataFeedStore: FeedStore {
 				completion(nil)
 			} catch {
 				completion(error)
+				context.rollback()
 			}
 		}
 	}
@@ -64,7 +65,7 @@ public final class CoreDataFeedStore: FeedStore {
 	}
 
 	//MARK: - Private Methods
-	
+
 	private func makeDeleteManagedFeedRequest() -> NSBatchDeleteRequest {
 		NSBatchDeleteRequest(fetchRequest: ManagedFeed.fetchRequest())
 	}
