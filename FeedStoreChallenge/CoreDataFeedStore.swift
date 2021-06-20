@@ -35,7 +35,7 @@ public final class CoreDataFeedStore: FeedStore {
 				      let managedFeedImages = feed.managedFeedImages else {
 					return completion(.empty)
 				}
-				let feedImages = managedFeedImages.map(LocalFeedImage.init(managedFeedImage:))
+				let feedImages = managedFeedImages.compactMap(LocalFeedImage.init(managedFeedImage:))
 				completion(.found(feed: feedImages, timestamp: feed.timestamp!))
 			} catch {
 				completion(.failure(error))
@@ -116,7 +116,12 @@ private extension ManagedFeed {
 }
 
 private extension LocalFeedImage {
-	init(managedFeedImage feedImage: ManagedFeedImage) {
-		self.init(id: feedImage.id!, description: feedImage.imageDescription, location: feedImage.location, url: feedImage.url!)
+	init?(managedFeedImage feedImage: ManagedFeedImage) {
+		guard let id = feedImage.id,
+		      let url = feedImage.url
+		else {
+			return nil
+		}
+		self.init(id: id, description: feedImage.imageDescription, location: feedImage.location, url: url)
 	}
 }
