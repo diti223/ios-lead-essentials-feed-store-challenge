@@ -46,7 +46,7 @@ public final class CoreDataFeedStore: FeedStore {
 	public func insert(_ feed: [LocalFeedImage], timestamp: Date, completion: @escaping InsertionCompletion) {
 		perform { context in
 
-			let managedFeed = self.createManagedFeed(from: feed)
+			let managedFeed = Self.createManagedFeed(from: feed, in: context)
 			managedFeed.timestamp = timestamp
 
 			do {
@@ -89,7 +89,7 @@ public final class CoreDataFeedStore: FeedStore {
 		return try context.fetch(request).first
 	}
 
-	private func createManagedFeedImage(from feedImage: LocalFeedImage) -> ManagedFeedImage {
+	private static func createManagedFeedImage(from feedImage: LocalFeedImage, in context: NSManagedObjectContext) -> ManagedFeedImage {
 		let managedItem = ManagedFeedImage(context: context)
 		managedItem.id = feedImage.id
 		managedItem.imageDescription = feedImage.description
@@ -98,9 +98,9 @@ public final class CoreDataFeedStore: FeedStore {
 		return managedItem
 	}
 
-	private func createManagedFeed(from feed: [LocalFeedImage]) -> ManagedFeed {
+	private static func createManagedFeed(from feed: [LocalFeedImage], in context: NSManagedObjectContext) -> ManagedFeed {
 		let managedFeed = ManagedFeed(context: context)
-		let managedItems = feed.map(createManagedFeedImage(from:))
+		let managedItems = feed.map { createManagedFeedImage(from: $0, in: context) }
 		let managedItemsSet = NSOrderedSet(array: managedItems)
 		managedFeed.addToItems(managedItemsSet)
 		return managedFeed
