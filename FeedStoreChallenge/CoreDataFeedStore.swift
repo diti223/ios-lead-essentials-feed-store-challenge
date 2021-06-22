@@ -50,7 +50,7 @@ public final class CoreDataFeedStore: FeedStore {
 			managedFeed.timestamp = timestamp
 
 			do {
-				try context.execute(self.makeDeleteManagedFeedRequest())
+				try context.execute(Self.makeDeleteManagedFeedRequest())
 				try context.save()
 				completion(nil)
 			} catch {
@@ -63,7 +63,7 @@ public final class CoreDataFeedStore: FeedStore {
 	public func deleteCachedFeed(completion: @escaping DeletionCompletion) {
 		perform { context in
 			do {
-				try context.execute(self.makeDeleteManagedFeedRequest())
+				try context.execute(Self.makeDeleteManagedFeedRequest())
 				completion(nil)
 			} catch {
 				completion(error)
@@ -73,7 +73,7 @@ public final class CoreDataFeedStore: FeedStore {
 
 	//MARK: - Private Methods
 
-	private func makeDeleteManagedFeedRequest() -> NSBatchDeleteRequest {
+	private static func makeDeleteManagedFeedRequest() -> NSBatchDeleteRequest {
 		NSBatchDeleteRequest(fetchRequest: ManagedFeed.fetchRequest())
 	}
 
