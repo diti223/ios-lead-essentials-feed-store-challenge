@@ -16,7 +16,7 @@ extension ManagedFeed {
 	}
 
 	@NSManaged public var timestamp: Date
-	@NSManaged public var items: NSOrderedSet?
+	@NSManaged public var items: NSOrderedSet
 }
 
 // MARK: Generated accessors for items

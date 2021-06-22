@@ -31,11 +31,10 @@ public final class CoreDataFeedStore: FeedStore {
 	public func retrieve(completion: @escaping RetrievalCompletion) {
 		perform { context in
 			do {
-				guard let feed = try Self.fetchFirstManagedFeed(context),
-				      let managedFeedImages = feed.managedFeedImages else {
+				guard let feed = try Self.fetchFirstManagedFeed(context) else {
 					return completion(.empty)
 				}
-				let feedImages = managedFeedImages.map(LocalFeedImage.init(managedFeedImage:))
+				let feedImages = feed.managedFeedImages.map(LocalFeedImage.init(managedFeedImage:))
 				completion(.found(feed: feedImages, timestamp: feed.timestamp))
 			} catch {
 				completion(.failure(error))
@@ -108,8 +107,8 @@ public final class CoreDataFeedStore: FeedStore {
 }
 
 private extension ManagedFeed {
-	var managedFeedImages: [ManagedFeedImage]? {
-		items?.compactMap {
+	var managedFeedImages: [ManagedFeedImage] {
+		items.compactMap {
 			$0 as? ManagedFeedImage
 		}
 	}
