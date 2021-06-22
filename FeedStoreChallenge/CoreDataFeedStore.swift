@@ -31,7 +31,7 @@ public final class CoreDataFeedStore: FeedStore {
 	public func retrieve(completion: @escaping RetrievalCompletion) {
 		perform { context in
 			do {
-				guard let feed = try self.fetchFirstManagedFeed(),
+				guard let feed = try Self.fetchFirstManagedFeed(context),
 				      let managedFeedImages = feed.managedFeedImages else {
 					return completion(.empty)
 				}
@@ -84,7 +84,7 @@ public final class CoreDataFeedStore: FeedStore {
 		}
 	}
 
-	private func fetchFirstManagedFeed() throws -> ManagedFeed? {
+	private static func fetchFirstManagedFeed(_ context: NSManagedObjectContext) throws -> ManagedFeed? {
 		let request: NSFetchRequest<ManagedFeed> = ManagedFeed.fetchRequest()
 		return try context.fetch(request).first
 	}
