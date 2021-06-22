@@ -15,7 +15,7 @@ extension ManagedFeed {
 		return NSFetchRequest<ManagedFeed>(entityName: "ManagedFeed")
 	}
 
-	@NSManaged public var timestamp: Date?
+	@NSManaged public var timestamp: Date
 	@NSManaged public var items: NSOrderedSet?
 }
 

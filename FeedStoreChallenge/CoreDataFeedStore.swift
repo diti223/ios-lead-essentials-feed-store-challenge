@@ -36,7 +36,7 @@ public final class CoreDataFeedStore: FeedStore {
 					return completion(.empty)
 				}
 				let feedImages = managedFeedImages.map(LocalFeedImage.init(managedFeedImage:))
-				completion(.found(feed: feedImages, timestamp: feed.timestamp!))
+				completion(.found(feed: feedImages, timestamp: feed.timestamp))
 			} catch {
 				completion(.failure(error))
 			}
